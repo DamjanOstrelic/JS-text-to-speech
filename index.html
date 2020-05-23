@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Voiceinator2000</title>
+    <link
+      href="https://fonts.googleapis.com/css?family=Pacifico"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="voiceinator">
+      <h1>The Voiceinator 2000</h1>
+
+      <select name="voice" id="voices">
+        <option value="">Select A Voice</option>
+      </select>
+
+      <label for="rate">Rate:</label>
+      <input name="rate" type="range" min="0" max="3" value="1" step="0.1" />
+
+      <label for="pitch">Pitch:</label>
+
+      <input name="pitch" type="range" min="0" max="2" step="0.1" />
+      <textarea name="text">Tell me what to say!</textarea>
+      <button id="stop">Stop!</button>
+      <button id="speak">Speak</button>
+    </div>
+
+    <script>
+      const msg = new SpeechSynthesisUtterance();
+      let voices = [];
+      const voicesDropdown = document.querySelector('[name="voice"]');
+      const options = document.querySelectorAll(
+        '[type="range"], [name="text"]'
+      );
+      const speakButton = document.querySelector("#speak");
+      const stopButton = document.querySelector("#stop");
+      //get text
+      msg.text = document.querySelector("[name='text']").value;
+      //populate voices function with map and append options to dropdown
+      function populateVoices() {
+        voices = this.getVoices();
+        voicesDropdown.innerHTML = voices
+          .map((voice) => {
+            return `<option name=${voice.name}>${voice.name}</option>`;
+          })
+          .join("");
+      }
+      //speechSynthesis add event listener for voiceschanged
+      speechSynthesis.addEventListener("voiceschanged", populateVoices);
+      //add function for changing voice - can't just pass in name, need to find object where name === this.value
+      function updateVoice() {
+        msg.voice = voices.find((voice) => voice.name === this.value);
+        toggle();
+      }
+      //add event listener for change event on dropdown
+      voicesDropdown.addEventListener("change", updateVoice);
+      //toggle function on change of dropdown
+      function toggle(startOver = true) {
+        speechSynthesis.cancel();
+        if (startOver) speechSynthesis.speak(msg);
+      }
+      function updateOptions() {
+        console.log(this.name, this.value);
+        msg[this.name] = this.value;
+        toggle();
+      }
+      //add event listeners for options
+      options.forEach((option) =>
+        option.addEventListener("change", updateOptions)
+      );
+      //add event listners for buttons
+      speakButton.addEventListener("click", toggle);
+      stopButton.addEventListener("click", () => toggle(false));
+    </script>
+  </body>
+</html>
